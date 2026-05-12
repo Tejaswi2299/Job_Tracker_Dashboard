@@ -2,9 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Gmail Job Tracker</title>
+  <title>Gmail Job Tracker - Deactivated</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="refresh" content="10800">
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -15,232 +14,32 @@
     .card {
       background: white;
       border-radius: 14px;
-      padding: 18px;
-      margin-bottom: 18px;
+      padding: 24px;
+      max-width: 760px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.07);
     }
-    h1 {
-      margin-bottom: 4px;
+    .status {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #f8d7da;
+      color: #842029;
+      font-weight: bold;
+      font-size: 13px;
     }
     .muted {
       color: #666;
-      font-size: 14px;
-    }
-    .metrics {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 12px;
-    }
-    .metric {
-      background: #fff;
-      padding: 16px;
-      border-radius: 14px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
-    }
-    .metric .num {
-      font-size: 28px;
-      font-weight: bold;
-    }
-    .filters {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 12px;
-      align-items: end;
-    }
-    input, select {
-      padding: 10px;
-      width: 100%;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      box-sizing: border-box;
-    }
-    label {
-      font-size: 13px;
-      color: #555;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-      border-radius: 14px;
-      overflow: hidden;
-    }
-    th, td {
-      padding: 10px;
-      border-bottom: 1px solid #eee;
-      text-align: left;
-      font-size: 14px;
-      vertical-align: top;
-    }
-    th {
-      background: #f0f0f3;
-      cursor: pointer;
-    }
-    .badge {
-      padding: 4px 8px;
-      border-radius: 999px;
-      font-size: 12px;
-      background: #eee;
-      display: inline-block;
-    }
-    .follow {
-      background: #fff3cd;
+      line-height: 1.5;
     }
   </style>
 </head>
 <body>
   <div class="card">
     <h1>Gmail Job Tracker</h1>
-    <div class="muted">Last refreshed: 2026-05-12 02:56:34. Page auto-refreshes every 3 hours.</div>
+    <span class="status">Project deactivated</span>
+    <p class="muted">Dashboard refresh is disabled, and this static page no longer publishes job tracking data.</p>
+    <p class="muted">Set <code>PROJECT_DEACTIVATED=false</code> and regenerate the dashboard to re-enable it.</p>
   </div>
-
-  <div class="metrics">
-    <div class="metric">
-      <div class="num" id="totalCount">0</div>
-      <div>Total Applications</div>
-    </div>
-    <div class="metric">
-      <div class="num" id="filteredCount">0</div>
-      <div>Filtered Results</div>
-    </div>
-    <div class="metric">
-      <div class="num" id="replyCount">0</div>
-      <div>Recruiter Replies</div>
-    </div>
-    <div class="metric">
-      <div class="num" id="followCount">0</div>
-      <div>Follow-ups Needed</div>
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>Filters</h3>
-    <div class="filters">
-      <div>
-        <label>Search company/title/subject</label>
-        <input id="searchBox" placeholder="Uber, Ivanti, Developer...">
-      </div>
-      <div>
-        <label>Status</label>
-        <select id="statusFilter">
-          <option value="">All statuses</option>
-        </select>
-      </div>
-      <div>
-        <label>From date</label>
-        <input type="date" id="fromDate">
-      </div>
-      <div>
-        <label>To date</label>
-        <input type="date" id="toDate">
-      </div>
-      <div>
-        <label>Follow-up needed</label>
-        <select id="followFilter">
-          <option value="">All</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <table>
-      <thead>
-        <tr>
-          <th>Company</th>
-          <th>Job Title</th>
-          <th>Status</th>
-          <th>Applied Date</th>
-          <th>Recruiter Reach Back</th>
-          <th>Recruiter Email</th>
-          <th>Latest Email Date</th>
-          <th>Latest Subject</th>
-          <th>Follow-up</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody"></tbody>
-    </table>
-  </div>
-
-<script>
-const DATA = [];
-
-const statusFilter = document.getElementById("statusFilter");
-const statuses = [...new Set(DATA.map(x => x.status).filter(Boolean))].sort();
-for (const s of statuses) {
-  const opt = document.createElement("option");
-  opt.value = s;
-  opt.textContent = s;
-  statusFilter.appendChild(opt);
-}
-
-function inDateRange(row) {
-  const from = document.getElementById("fromDate").value;
-  const to = document.getElementById("toDate").value;
-  const rowDate = row.latest_email_date || row.applied_date || "";
-
-  if (from && rowDate < from) return false;
-  if (to && rowDate > to) return false;
-  return true;
-}
-
-function applyFilters() {
-  const q = document.getElementById("searchBox").value.toLowerCase();
-  const status = document.getElementById("statusFilter").value;
-  const follow = document.getElementById("followFilter").value;
-
-  const filtered = DATA.filter(row => {
-    const haystack = [
-      row.company,
-      row.job_title,
-      row.latest_email_subject,
-      row.recruiter_email
-    ].join(" ").toLowerCase();
-
-    if (q && !haystack.includes(q)) return false;
-    if (status && row.status !== status) return false;
-    if (follow && row.follow_up_needed !== follow) return false;
-    if (!inDateRange(row)) return false;
-
-    return true;
-  });
-
-  render(filtered);
-}
-
-function render(rows) {
-  document.getElementById("totalCount").textContent = DATA.length;
-  document.getElementById("filteredCount").textContent = rows.length;
-  document.getElementById("replyCount").textContent = DATA.filter(x => x.recruiter_reach_back_date).length;
-  document.getElementById("followCount").textContent = DATA.filter(x => x.follow_up_needed === "Yes").length;
-
-  const tbody = document.getElementById("tableBody");
-  tbody.innerHTML = "";
-
-  for (const row of rows) {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${row.company || ""}</td>
-      <td>${row.job_title || ""}</td>
-      <td><span class="badge">${row.status || ""}</span></td>
-      <td>${row.applied_date || ""}</td>
-      <td>${row.recruiter_reach_back_date || ""}</td>
-      <td>${row.recruiter_email || ""}</td>
-      <td>${row.latest_email_date || ""}</td>
-      <td>${row.latest_email_subject || ""}</td>
-      <td><span class="badge ${row.follow_up_needed === "Yes" ? "follow" : ""}">${row.follow_up_needed || "No"}</span></td>
-    `;
-    tbody.appendChild(tr);
-  }
-}
-
-["searchBox", "statusFilter", "fromDate", "toDate", "followFilter"].forEach(id => {
-  document.getElementById(id).addEventListener("input", applyFilters);
-});
-
-render(DATA);
-</script>
 </body>
 </html>
